@@ -99,7 +99,8 @@ export default class HomeScreen extends React.Component {
 	            humidityOutDoorData,
 	            temparetureInDoorData,
 	            temparetureOutDoorData,
-	            lightData } = sensorData;
+	            lightData,
+	            mq135Data } = sensorData;
 	    
 	    return (
 	        <View style={{marginTop: SIZES.base}}>
@@ -143,7 +144,7 @@ export default class HomeScreen extends React.Component {
             <View style={{flexDirection: 'row', justifyContent: 'space-between', marginTop: SIZES.base}}>
                 <ValueComponent 
                   index={0}
-                  name="light in"
+                  name="light"
                   value={lightData.data}
                   icon={icons.cloudy}
                   unit="L"
@@ -151,11 +152,11 @@ export default class HomeScreen extends React.Component {
                 />
                  <ValueComponent 
                   index={1}
-                  name="Light out"
-                  value={lightData.data}
+                  name="Air quality"
+                  value={mq135Data.data}
                   icon={icons.cloudy}
-                  unit="L"
-                  time={lightData.time}
+                  unit=""
+                  time={mq135Data.time}
                 />
             </View>
           </View>

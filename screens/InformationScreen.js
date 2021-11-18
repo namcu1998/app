@@ -14,7 +14,12 @@ import { ContentComponent } from '../components';
 export default class InformationScreen extends React.Component {
   render() {
     const { navigation, route } = this.props;
-    const { ramUsed, IPAddress, cpuSpeed, wifiStrength } = route.params.data;
+    const { ramUsed, 
+            IPAddress, 
+            cpuSpeed, 
+            wifiStrength,
+            upTime
+    } = route.params.data;
     
     const renderHeader = () => {
       return (
@@ -68,6 +73,12 @@ export default class InformationScreen extends React.Component {
                 icon={icons.signal}
                 value={wifiStrength}
                 unit='mHz'
+              />
+              <ContentComponent
+                name='Up time'
+                icon={icons.working_time}
+                value={upTime}
+                unit=''
               />
             </View>
         );

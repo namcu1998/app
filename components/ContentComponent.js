@@ -7,7 +7,14 @@ export default class ContentComponent extends React.Component {
 	  const { name, unit, value, icon } = this.props;
 	  
 	  return (
-	      <View style={{paddingTop: SIZES.padding}}>
+	      <View 
+	        style={{
+	          paddingTop: SIZES.padding, 
+	          width: '45%',
+	          //justtifyContent: 'center',
+	          alignItems: 'center'
+	          }}
+          >
           <Image
             source={icon}
             resizeMode='contain'
