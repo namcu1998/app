@@ -1,14 +1,14 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
-import { FONTS, COLORS, SIZES, images, icons } from '../constants';
-
+import { FONTS, COLORS, SIZES, images, icons, lottiefiles } from '../constants';
+import LottieView from 'lottie-react-native'
 export default class ValueComponent extends React.Component {
 	render() {
-		const { index, name, time, value, unit, icon } = this.props;
+		const { index, name, time, value, unit, icon, valueState, surplusValue } = this.props;
 		return(
 			<View
 				    style={{
-				      backgroundColor: '#ffffff30',
+				      backgroundColor: '#ffffff50',
 				      borderWidth: 2,
 				      borderColor: '#ffffff50',
 				      borderRadius: SIZES.radius,
@@ -42,8 +42,54 @@ export default class ValueComponent extends React.Component {
 				        <Text style={{...FONTS.h4, color: '#fff'}}>{time.split(' ')[3]}</Text>
 				      </View>
 				    </View>
-				    <View style={{}}>
-				      <Text style={{...FONTS.h3, color: '#fff'}}>{value}{unit}</Text>
+				    <View style={{flexDirection: 'row', alignItems: 'center'}}>
+				      <Text style={{...FONTS.h2, color: '#fff'}}>{value}{value < 10000 ? unit : null}</Text>
+				      
+				    </View>
+				    <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around'}}>
+				      <Text style={{color: COLORS.white, ...FONTS.h4}}>{surplusValue > 0 ? `+${surplusValue}${unit}` : `${surplusValue}${unit}`}</Text>
+				      {
+				        valueState ? <View
+				          style={{
+				            transform: [
+				              {
+				                translateY: 5
+				              }
+				            ]
+				          }}
+				        >
+				        <LottieView
+    	            source={lottiefiles.upState}
+    	            autoPlay
+                  loop
+                  style={{
+                    width: 50,
+                    height: 50
+                  }}
+                />
+                </View> : <View
+                  style={{
+                    transform: [
+                      {
+                        rotate: '180deg'
+                      },
+                      {
+                        translateY: 5
+                      }
+                    ]
+                  }}
+                >
+                  <LottieView
+    	            source={lottiefiles.upState}
+    	            autoPlay
+                  loop
+                  style={{
+                    width: 50,
+                    height: 50
+                  }}
+                />
+              </View>
+				      }
 				    </View>
 				  </View>
 		);

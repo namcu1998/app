@@ -1,8 +1,12 @@
 import React from 'react';
 import { Text, View, ScrollView, ImageBackground, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { getDatabase, ref, set, onValue } from '../Firebase';
-import { FONTS, COLORS, SIZES, images, icons } from '../constants';
-import {ValueComponent} from '../components';
+import { getDatabase, ref, off, onValue } from '../Firebase';
+import { FONTS, COLORS, SIZES, images, icons, lottiefiles } from '../constants';
+import { ValueComponent, LoadingAnimation } from '../components';
+import LottieView from 'lottie-react-native';
+
+const db = getDatabase();
+const reference = ref(db, 'espData/espData/espSensorData');
 
 export default class HomeScreen extends React.Component {
 	constructor(props) {
@@ -10,25 +14,31 @@ export default class HomeScreen extends React.Component {
 		this.state = {
 			sensor_data: {},
 			is_loading: true
-		}
+		};
+		this._isMounted = false;
 	} 
 
 	componentDidMount() {
-		const db = getDatabase();
-		const reference = ref(db, 'espData/espData/espSensorData');
+	  this._isMounted = true;
 		onValue(reference, (snapshot) => {
 			const data = snapshot.val();
 			let obj = {...this.state};
 			obj.sensor_data = {...data};
 			obj.is_loading = false;
-			this.setState(obj);
+			this._isMounted && this.setState(obj);
 		})
+		
+		const unsubscribe = this.props.navigation.addListener('focus', () => {
+      this._isMounted = true;
+    });
+	}
+	
+	componentWillUnmount() {
+	  this._isMounted = false;
 	}
 
 	render () {
-	  
 	  const { sensor_data, is_loading } = this.state;
-	  //console.log(sensor_data.espInformation)
 	  
     const { espConnectStatus, 
           espInformation,
@@ -80,13 +90,31 @@ export default class HomeScreen extends React.Component {
               data: arrContent
             })}}
           >
+          <View 
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 2,
+              height: 15,
+              width: 15,
+              borderRadius: 7.5,
+              borderWidth: 0,
+              backgroundColor: 'white',
+              zIndex: 1,
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}
+          >
+            <Text style={{lineHeight: 16}}>{arrContent.length}</Text>
+          </View>
           <Image 
             source={icons.bell}
             resizeMode='contain'
             style={{
               height: 30,
               width: 30,
-              tintColor: arrContent.length === 0 ? COLORS.white : 'red'
+              tintColor: arrContent.length === 0 ? COLORS.white : 'white'
             }}
           />
           </TouchableOpacity>
@@ -103,7 +131,7 @@ export default class HomeScreen extends React.Component {
 	            mq135Data } = sensorData;
 	    
 	    return (
-	        <View style={{marginTop: SIZES.base}}>
+	        <View style={{marginTop: SIZES.base, zIndex: 1}}>
             <Text style={{color: 'white', ...FONTS.h1}}>Sensor</Text>
             <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
               <ValueComponent 
@@ -111,16 +139,20 @@ export default class HomeScreen extends React.Component {
                 name="Temperature"
                 value={temparetureInDoorData.data}
                 icon={icons.temperature}
+                valueState={temparetureInDoorData.isValueUp}
                 unit="°C"
                 time={temparetureInDoorData.time}
+                surplusValue={temparetureInDoorData.surplusValue}
               />
               <ValueComponent
                 index={1}
                 name="Humidity"
                 value={humidityInDoorData.data}
                 icon={icons.humidity}
+                valueState={humidityInDoorData.isValueUp}
                 unit="%"
                 time={humidityInDoorData.time}
+                surplusValue={humidityInDoorData.surplusValue}
               />
             </View>
             <View style={{flexDirection: 'row', marginTop: SIZES.base, justifyContent: 'space-between'}}>
@@ -129,16 +161,20 @@ export default class HomeScreen extends React.Component {
                 name="Temperature"
                 value={temparetureOutDoorData.data}
                 icon={icons.temperature}
+                valueState={temparetureOutDoorData.isValueUp}
                 unit="°C"
                 time={temparetureOutDoorData.time}
+                surplusValue={temparetureOutDoorData.surplusValue}
               />
               <ValueComponent
                 index={1}
                 name="Humidity"
                 value={humidityOutDoorData.data}
                 icon={icons.humidity}
+                valueState={humidityOutDoorData.isValueUp}
                 unit="%"
                 time={humidityOutDoorData.time}
+                surplusValue={humidityOutDoorData.surplusValue}
               />
             </View>
             <View style={{flexDirection: 'row', justifyContent: 'space-between', marginTop: SIZES.base}}>
@@ -147,16 +183,20 @@ export default class HomeScreen extends React.Component {
                   name="light"
                   value={lightData.data}
                   icon={icons.cloudy}
+                  valueState={lightData.isValueUp}
                   unit="L"
                   time={lightData.time}
+                  surplusValue={lightData.surplusValue}
                 />
                  <ValueComponent 
                   index={1}
                   name="Air quality"
                   value={mq135Data.data}
                   icon={icons.cloudy}
-                  unit=""
+                  valueState={mq135Data.isValueUp}
+                  unit="PPM"
                   time={mq135Data.time}
+                  surplusValue={mq135Data.surplusValue}
                 />
             </View>
           </View>
@@ -165,10 +205,27 @@ export default class HomeScreen extends React.Component {
 	  
 	  const renderTitle = () => {
 	    return (
-	        <View>
-	          <Text>error</Text>
-	        </View>
+	        <LottieView
+	            source={lottiefiles.loading_animation}
+	            autoPlay
+              loop
+              style={{
+                justifyContent: 'center',
+                alignItems: 'center',
+                width: 500,
+                height: 500
+              }}
+            />
 	      );
+	  }
+	  
+	  const renderMain = () => {
+	    return (
+	      <View style={{width: '100%'}}>
+	        {is_loading === false ? renderMain() : renderTitle()}
+	        {renderDataSensor()}
+        </View>
+	      )
 	  }
 	  
 		return (
@@ -176,16 +233,32 @@ export default class HomeScreen extends React.Component {
 				<ImageBackground
 					source={images.image1} 
 					resizeMode="cover"
+					blurRadius={is_loading === true ? 10 : 20}
 					style={{
 						flex: 1,
 						paddingTop: SIZES.padding * 2,
-						paddingHorizontal: SIZES.padding
+						paddingHorizontal: SIZES.padding,
+						alignItems: 'center',
+						zIndex: -2
 					}}
 				>
-			  <ScrollView>
-			    { is_loading === false ? renderHeader() : renderTitle()}
-			    { is_loading === false ? renderDataSensor() : renderTitle()}
-				</ScrollView>
+			    {renderHeader()}
+			    {is_loading ? renderTitle() : renderDataSensor()}
+				  <LoadingAnimation
+				    image={images.image_transparent}
+				    x='90%'
+				    y='112%'
+				    size={100}
+				    delay={500}
+			    />
+				  <LoadingAnimation
+				    image={images.image_transparent1}
+				    x='90%'
+				    y='20%'
+				    size={100}
+				    delay={1000}
+			    />
+				  
 				</ImageBackground>
 			</View>
 		);

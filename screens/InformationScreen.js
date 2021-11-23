@@ -18,7 +18,8 @@ export default class InformationScreen extends React.Component {
             IPAddress, 
             cpuSpeed, 
             wifiStrength,
-            upTime
+            upTime,
+            numberOfRestart
     } = route.params.data;
     
     const renderHeader = () => {
@@ -76,8 +77,14 @@ export default class InformationScreen extends React.Component {
               />
               <ContentComponent
                 name='Up time'
-                icon={icons.working_time}
+                icon={icons.stop_watch}
                 value={upTime}
+                unit=''
+              />
+              <ContentComponent
+                name='Restart'
+                icon={icons.working_time}
+                value={numberOfRestart}
                 unit=''
               />
             </View>

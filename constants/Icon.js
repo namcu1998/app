@@ -8,7 +8,9 @@ const right_arrow = require('../assets/icons/right-arrow.png');
 const left_arrow = require('../assets/icons/left-arrow.png');
 const bell = require('../assets/icons/bell.png');
 const ip = require('../assets/icons/ip.png');
-const working_time = require('../assets/icons/work-process.png')
+const stop_watch = require('../assets/icons/stopwatch.png');
+const working_time = require('../assets/icons/work-process.png');
+
 export default {
   temperature,
   humidity,
@@ -20,7 +22,8 @@ export default {
   left_arrow,
   bell,
   ip,
-  working_time
+  working_time,
+  stop_watch
 }
 
 

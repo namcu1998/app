@@ -1,29 +1,41 @@
 import React from 'react';
 import { View, Text, ScrollView, FlatList } from 'react-native';
-import { FONTS, COLORS, SIZES, images, icons } from '../constants';
-import { getDatabase, ref, set, onValue } from '../Firebase';
+import { FONTS, COLORS, SIZES, images, icons, lottiefiles } from '../constants';
+import { getDatabase, ref, off, onValue } from '../Firebase';
+import LottieView from 'lottie-react-native';
+
+const db = getDatabase();
+const reference = ref(db, 'historyData');
 
 export default class HistoryScreen extends React.Component {
   constructor(props) {
 		super(props);
 		this.state = {
-			history_data: [],
-			is_loading: true
-		}
+			history_data: []
+		};
+		this._isMounted = false;
 	} 
 
 	componentDidMount() {
-		const db = getDatabase();
-		const reference = ref(db, 'historyData');
+	  this._isMounted = true;
 		onValue(reference, (snapshot) => {
-			const data = snapshot.val();
-			let obj = {...this.state};
-			obj.history_data = [...data];
-			obj.history_data.length == 20;
-			obj.is_loading = false;
-			this.setState(obj);
-		})
+  		const data = snapshot.val();
+  		let obj = {...this.state};
+  		obj.history_data = [...data];
+  		obj.history_data.length = 10;
+  		obj.is_loading = false;
+  		this._isMounted && this.setState(obj);
+	})
+		
+		const unsubscribe = this.props.navigation.addListener('focus', () => {
+      this._isMounted = true;
+    });
 	}
+	
+	componentWillUnmount() {
+	  this._isMounted = false;
+	}
+	
   render() {
     const { is_loading, history_data } = this.state;
     
@@ -70,32 +82,32 @@ export default class HistoryScreen extends React.Component {
           );
       }
       return (
+        <View 
+          style={{
+            paddingTop: SIZES.padding * 2, 
+            paddingBottom: 60,
+            paddingHorizontal: SIZES.base,
+            backgroundColor: '#292929',
+          }}
+        >
           <FlatList
             data={this.state.history_data}
             renderItem={renderItem}
             keyExtractor={(item, index) => `${index}`}
           />
+        </View>
         );
     }
     const renderLoadingImage = () => {
       return (
-          <View>
-            <Text>loadding</Text>
-          </View>
+        <LottieView
+            source={lottiefiles.loading_animation}
+            autoPlay
+            loop
+          />
         );
     }
-    console.log(this.state)
-    return(
-      <View 
-        style={{
-          paddingTop: SIZES.padding * 2, 
-          paddingBottom: 60,
-          paddingHorizontal: SIZES.base,
-          backgroundColor: '#292929'
-        }}
-      >
-        { is_loading === false ? renderHistory() : renderLoadingImage() }
-      </View>
-      );
+    //console.log(this.state)
+    return is_loading === false ? renderHistory() : renderLoadingImage();
   }
 }
