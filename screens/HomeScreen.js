@@ -2,18 +2,23 @@ import React from 'react';
 import { Text, View, ScrollView, ImageBackground, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { getDatabase, ref, off, onValue } from '../Firebase';
 import { FONTS, COLORS, SIZES, images, icons, lottiefiles } from '../constants';
-import { ValueComponent, LoadingAnimation } from '../components';
+import { ValueComponent, LoadingAnimation, SwitchToggle } from '../components';
 import LottieView from 'lottie-react-native';
+import io from 'socket.io-client';
 
 const db = getDatabase();
 const reference = ref(db, 'espData/espData/espSensorData');
+const socket = io('https://rauthuycanh.herokuapp.com/webapp');
 
 export default class HomeScreen extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
 			sensor_data: {},
-			is_loading: true
+			device_data:{},
+			is_loading_sensor: true,
+			is_loading_device: true,
+			isClick: false
 		};
 		this._isMounted = false;
 	} 
@@ -24,7 +29,15 @@ export default class HomeScreen extends React.Component {
 			const data = snapshot.val();
 			let obj = {...this.state};
 			obj.sensor_data = {...data};
-			obj.is_loading = false;
+			obj.is_loading_sensor = false;
+			this._isMounted && this.setState(obj);
+		})
+		
+		onValue(ref(db, 'clientData/statusDevice'), (snapshot) => {
+			const data = snapshot.val();
+			let obj = {...this.state};
+			obj.device_data = {...data};
+			obj.is_loading_device = false;
 			this._isMounted && this.setState(obj);
 		})
 		
@@ -36,14 +49,21 @@ export default class HomeScreen extends React.Component {
 	componentWillUnmount() {
 	  this._isMounted = false;
 	}
+	
+	handleEventClick(key, value) {
+    console.log([key, value===1?0:1])
+	  socket.emit('activeDevice', [key, value===1?0:1])
+	}
 
 	render () {
-	  const { sensor_data, is_loading } = this.state;
+	  const { sensor_data, is_loading_sensor, device_data, is_loading_device } = this.state;
 	  
     const { espConnectStatus, 
           espInformation,
           sensorData,
           sensorStatus } = sensor_data;
+          
+    
 	  
 	  const renderHeader = () => {
 	    let arrContent = [];
@@ -90,24 +110,26 @@ export default class HomeScreen extends React.Component {
               data: arrContent
             })}}
           >
-          <View 
-            style={{
-              position: 'absolute',
-              top: 0,
-              right: 2,
-              height: 15,
-              width: 15,
-              borderRadius: 7.5,
-              borderWidth: 0,
-              backgroundColor: 'white',
-              zIndex: 1,
-              flexDirection: 'row',
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}
-          >
-            <Text style={{lineHeight: 16}}>{arrContent.length}</Text>
-          </View>
+          { arrContent.length !== 0 &&
+            <View 
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: 2,
+                height: 15,
+                width: 15,
+                borderRadius: 7.5,
+                borderWidth: 0,
+                backgroundColor: 'white',
+                zIndex: 1,
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
+            >
+              <Text style={{lineHeight: 16}}>{arrContent.length}</Text>
+            </View>
+          }
           <Image 
             source={icons.bell}
             resizeMode='contain'
@@ -203,6 +225,43 @@ export default class HomeScreen extends React.Component {
 	      );
 	  }
 	  
+	  const renderSwitchTable = () => {
+	    return (
+	      <View style={{marginTop: SIZES.padding}}>
+	        <Text style={{color: COLORS.white, ...FONTS.h1}}>Control</Text>
+	        <View
+            style={{
+              backgroundColor: '#ffffff50',
+              borderRadius: SIZES.radius,
+              paddingHorizontal: SIZES.padding
+            }}
+          >
+          {
+	          Object.entries(device_data).map(item => {
+	            return (
+  	          <View
+                key={item[0].toString()}
+  	            style={{
+  	              flexDirection: 'row', 
+  	              justifyContent: 'space-between',
+                  alignItems: 'center',
+                  paddingVertical: SIZES.base
+                }}
+              >
+  	            <Text style={{color: COLORS.white, ...FONTS.h3}}>{item[0]}</Text>
+  	            <SwitchToggle 
+  	              isActive={item[1]===1?true:false}
+  	              onPress={() => this.handleEventClick(item[0], item[1])}
+	              />
+  	          </View>
+  	          );
+	          })
+          }
+	        </View>
+        </View>
+	      );
+	  }
+	  
 	  const renderTitle = () => {
 	    return (
 	        <LottieView
@@ -222,58 +281,52 @@ export default class HomeScreen extends React.Component {
 	  const renderMain = () => {
 	    return (
 	      <View style={{width: '100%'}}>
-	        {is_loading === false ? renderMain() : renderTitle()}
+	        {renderSwitchTable()}
 	        {renderDataSensor()}
         </View>
 	      )
 	  }
 	  
+	  //console.log('iclick', this.state.isClick)
 		return (
 			<View style={{flex: 1}}>
 				<ImageBackground
 					source={images.image1} 
 					resizeMode="cover"
-					blurRadius={is_loading === true ? 10 : 20}
+					blurRadius={is_loading_sensor === true ? 10 : 20}
 					style={{
 						flex: 1,
 						paddingTop: SIZES.padding * 2,
-						paddingHorizontal: SIZES.padding,
-						alignItems: 'center',
+				    paddingHorizontal: SIZES.padding,
+				    paddingBottom: SIZES.padding * 2.5,
 						zIndex: -2
 					}}
 				>
-			    {renderHeader()}
-			    {is_loading ? renderTitle() : renderDataSensor()}
-				  <LoadingAnimation
-				    image={images.image_transparent}
-				    x='90%'
-				    y='112%'
-				    size={100}
-				    delay={500}
-			    />
-				  <LoadingAnimation
-				    image={images.image_transparent1}
-				    x='90%'
-				    y='20%'
-				    size={100}
-				    delay={1000}
-			    />
-				  
+		        {renderHeader()}
+    		     <ScrollView
+             showsVerticalScrollIndicator={false}
+              style={{
+                  width: '100%'
+              }}
+            >
+  			    {is_loading_sensor ? renderTitle() : renderMain()}
+  			    </ScrollView>
+  				  <LoadingAnimation
+  				    image={images.image_transparent}
+  				    x='90%'
+  				    y='112%'
+  				    size={100}
+  				    delay={500}
+  			    />
+  				  <LoadingAnimation
+  				    image={images.image_transparent1}
+  				    x='90%'
+  				    y='20%'
+  				    size={100}
+  				    delay={1000}
+  			    />
 				</ImageBackground>
 			</View>
 		);
 	}
 }
-
-const styles = StyleSheet.create({
-	shadow: {
-		shadowColor: '#000',
-		shadowOffset: {
-			width: 2,
-			height: 2
-		},
-		shadowOpacity: 0.25,
-		shadowRadius: 3.84,
-		elevation: 3
-	}
-})

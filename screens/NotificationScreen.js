@@ -28,7 +28,7 @@ export default class InformationScreen extends React.Component {
     const renderContent = () => {
         return data.map((item, index) => {
           return (
-            <View key={index} style={{width: '100%', height: 50, backgroundColor: 'red', alignItems: 'center', justifyContent: 'center'}}>
+            <View key={index.toString()} style={{width: '100%', height: 50, backgroundColor: 'green', alignItems: 'center', justifyContent: 'center'}}>
               <Text style={{...FONTS.h1}}>{item}</Text>
             </View>
           );
