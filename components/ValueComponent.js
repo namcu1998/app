@@ -1,12 +1,19 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet, Image } from 'react-native';
 import { FONTS, COLORS, SIZES, images, icons, lottiefiles } from '../constants';
 import LottieView from 'lottie-react-native'
 export default class ValueComponent extends React.Component {
 	render() {
-		const { index, name, time, value, unit, icon, valueState, surplusValue } = this.props;
+		const { index, name, totalValue, time, value, unit, icon, valueState, surplusValue, navigation } = this.props;
 		return(
-			<View
+			<TouchableOpacity
+            activeOpacity={1}
+            onPress={() => navigation.navigate('Detail', {
+              value,
+              name,
+              unit,
+              totalValue,
+            })}
 				    style={{
 				      backgroundColor: '#ffffff50',
 				      borderWidth: 2,
@@ -15,7 +22,7 @@ export default class ValueComponent extends React.Component {
 				      width: 160,
 				      paddingVertical: SIZES.padding,
 				      paddingHorizontal: SIZES.padding,
-				      marginLeft: index === 0 ? 0 : SIZES.base
+				      margin: 5
 				    }}
 				  >
 				    <View
@@ -91,7 +98,7 @@ export default class ValueComponent extends React.Component {
               </View>
 				      }
 				    </View>
-				  </View>
+				  </TouchableOpacity>
 		);
 	}
 }

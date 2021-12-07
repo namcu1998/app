@@ -1,7 +1,7 @@
-const temperature = require('../assets/icons/thermometer.png');
-const humidity = require('../assets/icons/humidity.png');
+const temperature_icon = require('../assets/icons/thermometer.png');
+const humidity_icon = require('../assets/icons/humidity.png');
 const cpu = require('../assets/icons/cpu.png');
-const cloudy = require('../assets/icons/cloudy.png');
+const sunny_icon = require('../assets/icons/cloudy.png');
 const ram = require('../assets/icons/ram.png');
 const signal = require('../assets/icons/signal.png');
 const right_arrow = require('../assets/icons/right-arrow.png');
@@ -10,12 +10,13 @@ const bell = require('../assets/icons/bell.png');
 const ip = require('../assets/icons/ip.png');
 const stop_watch = require('../assets/icons/stopwatch.png');
 const working_time = require('../assets/icons/work-process.png');
+const air_icon = require('../assets/icons/air-quality.png');
 
 export default {
-  temperature,
-  humidity,
+  temperature_icon,
+  humidity_icon,
   cpu,
-  cloudy,
+  sunny_icon,
   ram,
   signal,
   right_arrow,
@@ -23,7 +24,8 @@ export default {
   bell,
   ip,
   working_time,
-  stop_watch
+  stop_watch,
+  air_icon
 }
 
 

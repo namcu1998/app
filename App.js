@@ -31,6 +31,10 @@ export default function App() {
 			name="Notification"
 			component={Screen.NotificationScreen}
 		/>
+		<Stack.Screen
+			name="Detail"
+			component={Screen.DetailScreen}
+		/>
       </Stack.Navigator>
     </NavigationContainer>
   );

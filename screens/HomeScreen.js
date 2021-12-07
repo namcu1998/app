@@ -1,13 +1,13 @@
 import React from 'react';
-import { Text, View, ScrollView, ImageBackground, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { getDatabase, ref, off, onValue } from '../Firebase';
+import { Text, SafeAreaView, FlatList, View, ScrollView, ImageBackground, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { getDatabase, ref, onSnapshot, off, onValue, collection, getFirestore, doc, getDocs, addDoc } from '../Firebase';
 import { FONTS, COLORS, SIZES, images, icons, lottiefiles } from '../constants';
-import { ValueComponent, LoadingAnimation, SwitchToggle } from '../components';
+import { ValueComponent, LoadingAnimation, SwitchToggle, GaugeComponent } from '../components';
 import LottieView from 'lottie-react-native';
 import io from 'socket.io-client';
+import Fire from '../services/Devices.service';
 
-const db = getDatabase();
-const reference = ref(db, 'espData/espData/espSensorData');
+const db = getDatabase(); 
 const socket = io('https://rauthuycanh.herokuapp.com/webapp');
 
 export default class HomeScreen extends React.Component {
@@ -15,7 +15,7 @@ export default class HomeScreen extends React.Component {
 		super(props);
 		this.state = {
 			sensor_data: {},
-			device_data:{},
+			device_data: [],
 			is_loading_sensor: true,
 			is_loading_device: true,
 			isClick: false
@@ -25,7 +25,33 @@ export default class HomeScreen extends React.Component {
 
 	componentDidMount() {
 	  this._isMounted = true;
-		onValue(reference, (snapshot) => {
+	  
+	  /*this.uns = onSnapshot(collection(getFirestore(), "Devices"), (data) => {
+	    data.forEach(item => {
+	      console.log(item.data())
+	    })
+	  })*/
+		
+		const unsubscribe = this.props.navigation.addListener('focus', () => {
+      this._isMounted = true;
+    });
+    this.getDataFromDatabase();
+	}
+	
+	componentWillUnmount() {
+	  this._isMounted = false;
+	}
+	
+	handleEventClick(key, value) {
+    console.log(key, value)
+	  socket.emit('activeDevice', {
+	    id: key,
+	    state: !value
+	  })
+	}
+	
+	getDataFromDatabase() {
+	  onValue(ref(db, 'espData/espData/espSensorData'), (snapshot) => {
 			const data = snapshot.val();
 			let obj = {...this.state};
 			obj.sensor_data = {...data};
@@ -36,23 +62,10 @@ export default class HomeScreen extends React.Component {
 		onValue(ref(db, 'clientData/statusDevice'), (snapshot) => {
 			const data = snapshot.val();
 			let obj = {...this.state};
-			obj.device_data = {...data};
+			obj.device_data = [...data];
 			obj.is_loading_device = false;
 			this._isMounted && this.setState(obj);
 		})
-		
-		const unsubscribe = this.props.navigation.addListener('focus', () => {
-      this._isMounted = true;
-    });
-	}
-	
-	componentWillUnmount() {
-	  this._isMounted = false;
-	}
-	
-	handleEventClick(key, value) {
-    console.log([key, value===1?0:1])
-	  socket.emit('activeDevice', [key, value===1?0:1])
 	}
 
 	render () {
@@ -63,8 +76,6 @@ export default class HomeScreen extends React.Component {
           sensorData,
           sensorStatus } = sensor_data;
           
-    
-	  
 	  const renderHeader = () => {
 	    let arrContent = [];
 	    
@@ -145,81 +156,37 @@ export default class HomeScreen extends React.Component {
 	  }
 	  
 	  const renderDataSensor = () => {
-	    const { humidityInDoorData,
-	            humidityOutDoorData,
-	            temparetureInDoorData,
-	            temparetureOutDoorData,
-	            lightData,
-	            mq135Data } = sensorData;
+	    const renderItem = (item) => {
+	      return (
+                <ValueComponent
+                  navigation={this.props.navigation}
+                  key={item.id}
+                  name={item.name}
+                  value={item.value}
+                  icon={icons[item.icon]}
+                  valueState={item.isValueUp}
+                  totalValue={item.totalValue}
+                  unit={item.unit}
+                  time={item.time}
+                  surplusValue={item.surplusValue}
+                />
+	        );
+	    }
 	    
 	    return (
 	        <View style={{marginTop: SIZES.base, zIndex: 1}}>
             <Text style={{color: 'white', ...FONTS.h1}}>Sensor</Text>
-            <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-              <ValueComponent 
-                index={0}
-                name="Temperature"
-                value={temparetureInDoorData.data}
-                icon={icons.temperature}
-                valueState={temparetureInDoorData.isValueUp}
-                unit="°C"
-                time={temparetureInDoorData.time}
-                surplusValue={temparetureInDoorData.surplusValue}
-              />
-              <ValueComponent
-                index={1}
-                name="Humidity"
-                value={humidityInDoorData.data}
-                icon={icons.humidity}
-                valueState={humidityInDoorData.isValueUp}
-                unit="%"
-                time={humidityInDoorData.time}
-                surplusValue={humidityInDoorData.surplusValue}
-              />
-            </View>
-            <View style={{flexDirection: 'row', marginTop: SIZES.base, justifyContent: 'space-between'}}>
-              <ValueComponent 
-                index={0}
-                name="Temperature"
-                value={temparetureOutDoorData.data}
-                icon={icons.temperature}
-                valueState={temparetureOutDoorData.isValueUp}
-                unit="°C"
-                time={temparetureOutDoorData.time}
-                surplusValue={temparetureOutDoorData.surplusValue}
-              />
-              <ValueComponent
-                index={1}
-                name="Humidity"
-                value={humidityOutDoorData.data}
-                icon={icons.humidity}
-                valueState={humidityOutDoorData.isValueUp}
-                unit="%"
-                time={humidityOutDoorData.time}
-                surplusValue={humidityOutDoorData.surplusValue}
-              />
-            </View>
-            <View style={{flexDirection: 'row', justifyContent: 'space-between', marginTop: SIZES.base}}>
-                <ValueComponent 
-                  index={0}
-                  name="light"
-                  value={lightData.data}
-                  icon={icons.cloudy}
-                  valueState={lightData.isValueUp}
-                  unit="L"
-                  time={lightData.time}
-                  surplusValue={lightData.surplusValue}
-                />
-                 <ValueComponent 
-                  index={1}
-                  name="Air quality"
-                  value={mq135Data.data}
-                  icon={icons.cloudy}
-                  valueState={mq135Data.isValueUp}
-                  unit="PPM"
-                  time={mq135Data.time}
-                  surplusValue={mq135Data.surplusValue}
-                />
+            <View 
+              style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                width: '100%',
+                justifyContent: 'center'
+              }}
+            >
+              {
+                sensorData.map(item => renderItem(item))
+              }
             </View>
           </View>
 	      );
@@ -237,10 +204,10 @@ export default class HomeScreen extends React.Component {
             }}
           >
           {
-	          Object.entries(device_data).map(item => {
+	          device_data.map(item => {
 	            return (
   	          <View
-                key={item[0].toString()}
+                key={item.id.toString()}
   	            style={{
   	              flexDirection: 'row', 
   	              justifyContent: 'space-between',
@@ -248,10 +215,10 @@ export default class HomeScreen extends React.Component {
                   paddingVertical: SIZES.base
                 }}
               >
-  	            <Text style={{color: COLORS.white, ...FONTS.h3}}>{item[0]}</Text>
+  	            <Text style={{color: COLORS.white, ...FONTS.h3}}>{item.name}</Text>
   	            <SwitchToggle 
-  	              isActive={item[1]===1?true:false}
-  	              onPress={() => this.handleEventClick(item[0], item[1])}
+  	              isActive={item.isActived}
+  	              onPress={() => this.handleEventClick(item.id, item.isActived)}
 	              />
   	          </View>
   	          );
@@ -293,7 +260,7 @@ export default class HomeScreen extends React.Component {
 				<ImageBackground
 					source={images.image1} 
 					resizeMode="cover"
-					blurRadius={is_loading_sensor === true ? 10 : 20}
+					blurRadius={is_loading_sensor === true ? 10 : 0}
 					style={{
 						flex: 1,
 						paddingTop: SIZES.padding * 2,
@@ -309,22 +276,10 @@ export default class HomeScreen extends React.Component {
                   width: '100%'
               }}
             >
+            
   			    {is_loading_sensor ? renderTitle() : renderMain()}
   			    </ScrollView>
-  				  <LoadingAnimation
-  				    image={images.image_transparent}
-  				    x='90%'
-  				    y='112%'
-  				    size={100}
-  				    delay={500}
-  			    />
-  				  <LoadingAnimation
-  				    image={images.image_transparent1}
-  				    x='90%'
-  				    y='20%'
-  				    size={100}
-  				    delay={1000}
-  			    />
+  				 
 				</ImageBackground>
 			</View>
 		);

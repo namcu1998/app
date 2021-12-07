@@ -47,37 +47,53 @@ export default class HistoryScreen extends React.Component {
               width: '100%',
               justifyContent: 'space-between',
               flexDirection: 'column',
-              borderBottomColor: '#b97eff', 
-              borderBottomWidth: 1,
-              paddingTop: index === 0 ? 0 : 5
+              marginTop: index === 0 ? 0 : 5,
+              backgroundColor: 'white',
+              borderRadius: 20,
+              padding: SIZES.base
             }}
           >
-            <View 
-              style={{
-                
-                flexDirection: 'row',
-                justifyContent: 'space-between'
-              }}
-            > 
-              <View>
-                <Text style={{color: COLORS.white, ...FONTS.h2}}>{item.thoigian.split(' ')[3]}</Text>
-              </View>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text style={{color: COLORS.white, ...FONTS.h3}}>TI: {item.nhietdo}°C</Text>
-                <Text style={{color: COLORS.white, ...FONTS.h3, marginLeft: SIZES.base}}>HI: {item.doam}°C</Text>
-              </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'center' }}> 
+              <Text style={{color: COLORS.black, ...FONTS.h2}}>{item.time}</Text>
             </View>
-            <View 
+            <ScrollView
+              vertical={false}
+              horizontal
+              showsHorizontalScrollIndicator={false}
               style={{
-                flexDirection: 'row', 
-                justifyContent: 'space-between',
                 marginTop: SIZES.base
               }}
             >
-              <Text style={{color: COLORS.white, ...FONTS.h3}}>TO: {item.nhietdo1}%</Text>
-              <Text style={{color: COLORS.white, ...FONTS.h3}}>HO: {item.doam1}%</Text>
-              <Text style={{color: COLORS.white, ...FONTS.h3}}>L: {item.anhsang}lux</Text>
-            </View>
+              {
+                item.sensorData.map((item, index) => {
+                  return (
+                    <View key={item.id} style={{flexDirection: 'row',marginLeft: index===0?0:10, justifyContent: 'flex-start', alignItems: 'center'}}>
+                      <Text style={{color: '#000000', ...FONTS.h3}}>{item.name.split('')[0]}: </Text>
+                      <Text style={{color: '#000000', ...FONTS.h3}}>{item.value}{item.unit}</Text>
+                    </View>
+                  );
+                })
+              }
+            </ScrollView>
+            <ScrollView
+              vertical={false}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{
+                marginTop: SIZES.base
+              }}
+            >
+              {
+                item.deviceData.map((item, index) => {
+                  return (
+                    <View key={item.id} style={{flexDirection: 'row', marginHorizontal: index===0?0:10, justifyContent: 'flex-start', alignItems: 'center'}}>
+                      <Text style={{color: '#000000', ...FONTS.h3}}>{item.name}: </Text>
+                      <Text style={{color: '#000000', ...FONTS.h3}}>{item.isActived ? 'ON' : 'OFF'}</Text>
+                    </View>
+                  );
+                })
+              }
+            </ScrollView>
           </View>
           );
       }
@@ -93,6 +109,7 @@ export default class HistoryScreen extends React.Component {
           <FlatList
             data={this.state.history_data}
             renderItem={renderItem}
+            showsVerticalScrollIndicator={false}
             keyExtractor={(item, index) => `${index}`}
           />
         </View>

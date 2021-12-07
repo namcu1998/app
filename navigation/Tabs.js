@@ -8,7 +8,7 @@ import { Icon } from 'react-native-elements'
 
 const Tab = createBottomTabNavigator();
 const tabStyle = {
-    backgroundColor: 'white',
+    backgroundColor: 'transparent',
 		borderTopWidth: 0,
 	  position: 'absolute',
 	  left: 16,
@@ -16,7 +16,7 @@ const tabStyle = {
 	  height: 50,
 	  bottom: 10,
 	  borderRadius: 15,
-  	elevation: 9
+  	elevation: 0
 }
 
 export default function Tabs() {
@@ -39,7 +39,7 @@ export default function Tabs() {
                 size={iconSize}
                 name={iconName}
                 type='ionicon'
-                color='#517fa4'
+                color='#ffffff'
               />
             } else if (route.name === 'History') {
               iconName = focused 
@@ -50,7 +50,7 @@ export default function Tabs() {
                 size={iconSize}
                 name={iconName}
                 type='ionicon'
-                color='#517fa4'
+                color='#ffffff'
               />
             } else {
               iconName = focused 
@@ -61,11 +61,11 @@ export default function Tabs() {
                 size={iconSize}
                 name={iconName}
                 type='ionicon'
-                color='#517fa4'
+                color='#ffffff'
               />
             }
           },
-          tabBarActiveTintColor: 'tomato',
+          tabBarActiveTintColor: 'white',
           tabBarInactiveTintColor: 'gray',
         })}
       >
