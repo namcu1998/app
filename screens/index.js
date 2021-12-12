@@ -1,17 +1,19 @@
-import HomeScreen from './HomeScreen';
-import HistoryScreen from './HistoryScreen';
-import ChartScreen from './ChartScreen';
-import InformationScreen from './InformationScreen';
-import NotificationScreen from './NotificationScreen';
-import DetailScreen from './DetailScreen';
+import HomeScreen from "./HomeScreen";
+import HistoryScreen from "./HistoryScreen";
+import ChartScreen from "./ChartScreen";
+import InformationScreen from "./InformationScreen";
+import NotificationScreen from "./NotificationScreen";
+import DetailScreen from "./DetailScreen";
+import AddScreen from "./AddScreen";
 
-const Screen = { 
-  HomeScreen, 
-  HistoryScreen, 
+const Screen = {
+  HomeScreen,
+  HistoryScreen,
   ChartScreen,
   InformationScreen,
   NotificationScreen,
-  DetailScreen
+  DetailScreen,
+  AddScreen,
 };
 
 export default Screen;
