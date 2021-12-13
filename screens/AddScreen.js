@@ -44,7 +44,7 @@ export default class addScreen extends React.Component {
         <Picker
           selectedValue={this.state.selectedValue}
           style={{ height: 50, width: 150 }}
-          onValueChange={(itemValue, itemIndex) => setSelectedValue(itemValue)}
+          onValueChange={(itemValue, itemIndex) => console.log(itemValue)}
         >
           <Picker.Item label="Java" value="java" />
           <Picker.Item label="JavaScript" value="js" />
